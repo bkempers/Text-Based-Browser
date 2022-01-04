@@ -11,6 +11,7 @@ import argparse
 import os
 import requests
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 parser = argparse.ArgumentParser(description="Input directory name to store website tabs.")
 parser.add_argument("dir_name")
@@ -40,10 +41,12 @@ class TextBrowser():
             self.tab_input(path=changed_file_path)
         else:
             request = requests.get(input)
+            url_soup = BeautifulSoup(request.content, "html.parser")
+            website_text = url_soup.get_text()
             if request.status_code == 200:
-                print(request.text)
+                print(website_text)
                 with open(domain, 'w', encoding='utf-8') as file:
-                    file.write(request.text)
+                    file.write(website_text)
                     file.flush()
             else:
                 print("error: input URL wasn't able to be requested from server.")
@@ -85,7 +88,7 @@ class TextBrowser():
                 self.website_input(input=user_input, domain=website_name)
                 self.last_website = website_name
             else:
-                print("error: input isn't a valid URL or isn't a proper command")
+                print("Incorrect URL")
 
 
 while True:
