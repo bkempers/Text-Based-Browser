@@ -12,11 +12,11 @@ import os
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from colorama import Fore
 
 parser = argparse.ArgumentParser(description="Input directory name to store website tabs.")
 parser.add_argument("dir_name")
 arg = parser.parse_args()
-
 
 class TextBrowser():
     website_tabs = []
@@ -40,14 +40,23 @@ class TextBrowser():
         if os.path.exists(changed_file_path):
             self.tab_input(path=changed_file_path)
         else:
-            request = requests.get(input)
-            url_soup = BeautifulSoup(request.content, "html.parser")
-            website_text = url_soup.get_text()
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)"
+            }
+            request = requests.get(input, headers=headers)
             if request.status_code == 200:
-                print(website_text)
+                url_soup = BeautifulSoup(request.content, "html.parser")
+
+                for link in url_soup.find_all("a"):
+                    link.string = "".join([Fore.BLUE, link.get_text(), Fore.RESET])
+
                 with open(domain, 'w', encoding='utf-8') as file:
-                    file.write(website_text)
+                    file.write(url_soup.get_text())
                     file.flush()
+
+                with open(domain, 'r') as file:
+                    print(file.read())
+
             else:
                 print("error: input URL wasn't able to be requested from server.")
 
